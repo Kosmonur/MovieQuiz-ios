@@ -16,9 +16,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var recordAnswers: Int = 0
     // дата установления рекорда
     private var recordDate = ""
-    // флаг запрета повторного вызова функции показа ответов и изменения счетчика во время паузы
-    private var showAnswerBlock = false
-    
+
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var counterLabel: UILabel!
@@ -45,6 +43,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         UINotificationFeedbackGenerator().notificationOccurred(feedbackType)
     }
     
+    @IBOutlet private var noButton: UIButton!
+    @IBOutlet private var yesButton: UIButton!
+    
     @IBAction private func noButtonClicked(_ sender: UIButton) {
         guard let currentQuestion = currentQuestion else { return }
         showAnswerResult(isCorrect: !currentQuestion.correctAnswer)
@@ -70,7 +71,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showAnswerResult(isCorrect: Bool) {
-        if showAnswerBlock { return }
         
         if isCorrect {
             imageView.layer.borderColor = UIColor.ypGreen.cgColor
@@ -81,15 +81,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             notify(.error)
         }
         
-        // запрещаем повторный вызов функции показа ответа во время паузы
-        showAnswerBlock = true
+        noButton.isEnabled = false
+        yesButton.isEnabled = false
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {[weak self] in
             guard let self else { return }
-            // разрешаем вызов показа ответов после окончания паузы
-            self.showAnswerBlock = false
-            // переходим к выводу след вопроса или результатов
+
             self.showNextQuestionOrResults()
+            self.noButton.isEnabled = true
+            self.yesButton.isEnabled = true
         }
     }
     
@@ -120,19 +120,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
         
         private func show(quiz result: QuizResultsViewModel) {
-            let alert = UIAlertController(
+            let alertModel = AlertModel (
                 title: result.title,
                 message: result.text,
-                preferredStyle: .alert)
-            
-            let action = UIAlertAction(title: result.buttonText, style: .default) {[weak self] _ in
-                guard let self else { return }
-                self.correctAnswers = 0
-                self.numberOfQuiz += 1
-                self.currentQuestionIndex = 0
-                self.questionFactory?.requestNextQuestion()
-            }
-            alert.addAction(action)
-            self.present(alert, animated: true, completion: nil)
+                buttonText: result.buttonText)
+                {[weak self] in
+                    guard let self else { return }
+                    self.correctAnswers = 0
+                    self.numberOfQuiz += 1
+                    self.currentQuestionIndex = 0
+                    self.questionFactory?.requestNextQuestion()
+                }
+            let alertPresenter = AlertPresenter()
+            alertPresenter.showAlert(alertController: self, alertModel: alertModel)
         }
 }
