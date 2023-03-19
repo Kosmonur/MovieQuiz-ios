@@ -8,14 +8,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private let questionsAmount: Int = 10
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
-    
-    private var numberOfQuiz: Int = 1
-    // суммарное количество верных ответов во всех играх (для расчета средней точнности)
-    private var sumCorrectAnswers: Int = 0
-    // лучшее количество верных ответов в сессии игр (рекорд)
-    private var recordAnswers: Int = 0
-    // дата установления рекорда
-    private var recordDate = ""
+    private var statisticService: StatisticService = StatisticServiceImplementation()
 
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
@@ -98,18 +91,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
-            // вычисляем среднюю точность в %
-            sumCorrectAnswers += correctAnswers
-            let accuracy = 100 * Float(sumCorrectAnswers) / Float(questionsAmount * numberOfQuiz)
-            let accuracyString = String(format: "%.2f", accuracy)
             
-            // если установлен рекорд - то сохраняем счетчик и дату
-            if correctAnswers > recordAnswers {
-                recordAnswers = correctAnswers
-                recordDate = Date().dateTimeString
-            }
+            statisticService.store(correct: correctAnswers, total: questionsAmount)
             
-            let text = "Ваш результат: \(correctAnswers)/\(questionsAmount)\nКоличество сыгранных квизов: \(numberOfQuiz)\nРекорд: \(recordAnswers)/\(questionsAmount) (\(recordDate))\nСредняя точность: \(accuracyString)%"
+            let text = "Ваш результат: \(correctAnswers)/\(questionsAmount)\nКоличество сыгранных квизов: \(statisticService.gamesCount)\nРекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))\nСредняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
+            
             let viewModel = QuizResultsViewModel(
                 title: "Этот раунд окончен!",
                 text: text,
@@ -130,7 +116,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                 {[weak self] in
                     guard let self else { return }
                     self.correctAnswers = 0
-                    self.numberOfQuiz += 1
                     self.currentQuestionIndex = 0
                     self.questionFactory?.requestNextQuestion()
                 }
