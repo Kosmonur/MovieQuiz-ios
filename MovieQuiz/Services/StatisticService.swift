@@ -30,7 +30,6 @@ final class StatisticServiceImplementation: StatisticService {
             }
             return record
         }
-        
         set {
             guard let data = try? JSONEncoder().encode(newValue) else {
                 print("Невозможно сохранить результат")
@@ -49,24 +48,33 @@ final class StatisticServiceImplementation: StatisticService {
         }
     }
     
+    var correctAnswer: Int {
+        get {
+            userDefaults.integer(forKey: Keys.correct.rawValue)
+        }
+        set {
+            userDefaults.set(newValue, forKey: Keys.correct.rawValue)
+        }
+    }
+    
+    var totalAmount: Int {
+        get {
+            userDefaults.integer(forKey: Keys.total.rawValue)
+        }
+        set {
+            userDefaults.set(newValue, forKey: Keys.total.rawValue)
+        }
+    }
+    
     var totalAccuracy: Double {
         get{
-            let correctAnswer = userDefaults.integer(forKey: Keys.correct.rawValue)
-            let totalAmount = userDefaults.integer(forKey: Keys.total.rawValue)
-            return totalAmount != 0 ? 100 * Double(correctAnswer) / Double(totalAmount) : 0
+            totalAmount != 0 ? 100 * Double(correctAnswer) / Double(totalAmount) : 0
         }
     }
     
     func store(correct count: Int, total amount: Int) {
-        
-        var correctAnswer = userDefaults.integer(forKey: Keys.correct.rawValue)
         correctAnswer += count
-        userDefaults.set(correctAnswer,forKey: Keys.correct.rawValue)
-        
-        var totalAmount = userDefaults.integer(forKey: Keys.total.rawValue)
         totalAmount += amount
-        userDefaults.set(totalAmount,forKey: Keys.total.rawValue)
-        
         gamesCount += 1
         
         let currentGame = GameRecord(correct: count, total: amount, date: Date())

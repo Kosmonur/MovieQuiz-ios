@@ -2,10 +2,16 @@ import UIKit
 
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
+    private enum Constants {
+            static let questionsAmount = 10
+        enum ResultsAlert {
+            static let title = "Этот раунд окончен!"
+            static let buttonText = "Cыграть ещё раз"
+        }
+    }
+    
     private var correctAnswers: Int = 0
     private var currentQuestionIndex: Int = 0
-    
-    private let questionsAmount: Int = 10
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     private var statisticService: StatisticService = StatisticServiceImplementation()
@@ -56,7 +62,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         QuizStepViewModel(
             image: UIImage(imageLiteralResourceName: model.image),
             question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+            questionNumber: "\(currentQuestionIndex + 1)/\(Constants.questionsAmount)")
     }
     
     private func show(quiz step: QuizStepViewModel) {
@@ -90,16 +96,21 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showNextQuestionOrResults() {
-        if currentQuestionIndex == questionsAmount - 1 {
+        if currentQuestionIndex == Constants.questionsAmount - 1 {
             
-            statisticService.store(correct: correctAnswers, total: questionsAmount)
+            statisticService.store(correct: correctAnswers, total: Constants.questionsAmount)
             
-            let text = "Ваш результат: \(correctAnswers)/\(questionsAmount)\nКоличество сыгранных квизов: \(statisticService.gamesCount)\nРекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))\nСредняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
+            let text = """
+Ваш результат: \(correctAnswers)/\(Constants.questionsAmount)
+Количество сыгранных квизов: \(statisticService.gamesCount)
+Рекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))
+Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
+"""
             
             let viewModel = QuizResultsViewModel(
-                title: "Этот раунд окончен!",
+                title: Constants.ResultsAlert.title,
                 text: text,
-                buttonText: "Cыграть ещё раз")
+                buttonText: Constants.ResultsAlert.buttonText)
             show(quiz: viewModel)
             
         } else {
