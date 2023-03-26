@@ -1,19 +1,12 @@
 import Foundation
 
 protocol StatisticService {
-    func store(correct count: Int, total amount: Int)
+    
     var totalAccuracy: Double { get }
     var gamesCount: Int { get }
     var bestGame: GameRecord { get }
-}
-
-struct GameRecord: Codable, Comparable {
-    let correct: Int
-    let total: Int
-    let date: Date
-    static func < (lhs: GameRecord, rhs: GameRecord) -> Bool {
-        return lhs.correct < rhs.correct
-    }
+    
+    func store(correct count: Int, total amount: Int)
 }
 
 final class StatisticServiceImplementation: StatisticService {

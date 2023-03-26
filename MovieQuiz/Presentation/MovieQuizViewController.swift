@@ -13,6 +13,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var correctAnswers: Int = 0
     private var currentQuestionIndex: Int = 0
     private var questionFactory: QuestionFactoryProtocol?
+    private var alertPresenter: AlertPresenterProtocol?
     private var currentQuestion: QuizQuestion?
     private var statisticService: StatisticService = StatisticServiceImplementation()
 
@@ -26,7 +27,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         questionFactory = QuestionFactory(delegate: self)
+        alertPresenter = AlertPresenter(alertController: self)
+        
         questionFactory?.requestNextQuestion()
     }
     
@@ -118,19 +122,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             questionFactory?.requestNextQuestion()
         }
     }
-        
-        private func show(quiz result: QuizResultsViewModel) {
-            let alertModel = AlertModel (
-                title: result.title,
-                message: result.text,
-                buttonText: result.buttonText)
-                {[weak self] in
-                    guard let self else { return }
-                    self.correctAnswers = 0
-                    self.currentQuestionIndex = 0
-                    self.questionFactory?.requestNextQuestion()
-                }
-            let alertPresenter = AlertPresenter()
-            alertPresenter.showAlert(alertController: self, alertModel: alertModel)
+    
+    private func show(quiz result: QuizResultsViewModel) {
+        let alertModel = AlertModel (
+            title: result.title,
+            message: result.text,
+            buttonText: result.buttonText)
+        {[weak self] in
+            guard let self else { return }
+            self.correctAnswers = 0
+            self.currentQuestionIndex = 0
+            self.questionFactory?.requestNextQuestion()
         }
+        alertPresenter?.showAlert(alertModel: alertModel)
+    }
 }
