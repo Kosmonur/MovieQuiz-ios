@@ -1,12 +1,16 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
-    
+
     private enum Constants {
-            static let questionsAmount = 10
+        static let questionsAmount = 10
         enum ResultsAlert {
             static let title = "Этот раунд окончен!"
             static let buttonText = "Cыграть ещё раз"
+        }
+        enum ErrorAlert {
+            static let title = "Что-то пошло не так("
+            static let buttonText = "Попробовать ещё раз"
         }
     }
     
@@ -16,22 +20,25 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var alertPresenter: AlertPresenterProtocol?
     private var currentQuestion: QuizQuestion?
     private var statisticService: StatisticService = StatisticServiceImplementation()
-
+    
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var counterLabel: UILabel!
+    @IBOutlet private var activityIndicator: UIActivityIndicatorView!
     
     // делаем статусбар светлым, как в макете
     override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
-    
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        questionFactory = QuestionFactory(delegate: self)
+
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         alertPresenter = AlertPresenter(alertController: self)
-        
-        questionFactory?.requestNextQuestion()
+
+        showLoadingIndicator()
+        questionFactory?.loadData()
+
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -41,7 +48,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         currentQuestion = question
         let viewModel = convert(model: question)
         DispatchQueue.main.async { [weak self] in
-                self?.show(quiz: viewModel)
+            self?.show(quiz: viewModel)
         }
     }
     
@@ -64,7 +71,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         QuizStepViewModel(
-            image: UIImage(imageLiteralResourceName: model.image),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(Constants.questionsAmount)")
     }
@@ -92,7 +99,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {[weak self] in
             guard let self else { return }
-
+            
             self.showNextQuestionOrResults()
             self.noButton.isEnabled = true
             self.yesButton.isEnabled = true
@@ -136,4 +143,39 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
         alertPresenter?.showAlert(alertModel: alertModel)
     }
+    
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+    
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
+    }
+    
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+        let alertModel = AlertModel (
+            title: Constants.ErrorAlert.title,
+            message: message,
+            buttonText: Constants.ErrorAlert.buttonText)
+        {[weak self] in
+            guard let self else { return }
+            self.correctAnswers = 0
+            self.currentQuestionIndex = 0
+            self.questionFactory?.requestNextQuestion()
+        }
+        alertPresenter?.showAlert(alertModel: alertModel)
+    }
+    
+    func didLoadDataFromServer() {
+        hideLoadingIndicator()
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+    
 }
