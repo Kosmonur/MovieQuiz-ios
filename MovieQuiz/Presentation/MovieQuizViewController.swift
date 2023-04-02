@@ -150,8 +150,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func hideLoadingIndicator() {
-        activityIndicator.isHidden = true
         activityIndicator.stopAnimating()
+        activityIndicator.isHidden = true
     }
     
     private func showNetworkError(message: String) {
@@ -164,7 +164,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             guard let self else { return }
             self.correctAnswers = 0
             self.currentQuestionIndex = 0
-            self.questionFactory?.requestNextQuestion()
+            self.questionFactory?.loadData()
         }
         alertPresenter?.showAlert(alertModel: alertModel)
     }
@@ -176,6 +176,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     func didFailToLoadData(with error: Error) {
         showNetworkError(message: error.localizedDescription)
+    }
+    
+    func didFailToLoadImage() {
+        let alertModel = AlertModel (
+            title: Constants.ErrorAlert.title,
+            message: "Картинка не загружается",
+            buttonText: Constants.ErrorAlert.buttonText)
+        {[weak self] in
+            guard let self else { return }
+            self.questionFactory?.requestNextQuestion()
+        }
+        alertPresenter?.showAlert(alertModel: alertModel)
     }
     
 }
