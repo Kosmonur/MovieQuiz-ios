@@ -1,33 +1,44 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
-    
+
     private enum Constants {
-            static let questionsAmount = 10
+        static let questionsAmount = 10
         enum ResultsAlert {
             static let title = "Этот раунд окончен!"
             static let buttonText = "Cыграть ещё раз"
+        }
+        enum ErrorAlert {
+            static let title = "Что-то пошло не так("
+            static let buttonText = "Попробовать ещё раз"
         }
     }
     
     private var correctAnswers: Int = 0
     private var currentQuestionIndex: Int = 0
     private var questionFactory: QuestionFactoryProtocol?
+    private var alertPresenter: AlertPresenterProtocol?
     private var currentQuestion: QuizQuestion?
     private var statisticService: StatisticService = StatisticServiceImplementation()
-
+    
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var counterLabel: UILabel!
+    @IBOutlet private var activityIndicator: UIActivityIndicatorView!
     
     // делаем статусбар светлым, как в макете
     override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
-    
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        questionFactory = QuestionFactory(delegate: self)
-        questionFactory?.requestNextQuestion()
+
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        alertPresenter = AlertPresenter(alertController: self)
+
+        activityIndicator.startAnimating()
+        questionFactory?.loadData()
+        activityIndicator.stopAnimating()
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -37,7 +48,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         currentQuestion = question
         let viewModel = convert(model: question)
         DispatchQueue.main.async { [weak self] in
-                self?.show(quiz: viewModel)
+            self?.show(quiz: viewModel)
         }
     }
     
@@ -60,7 +71,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         QuizStepViewModel(
-            image: UIImage(imageLiteralResourceName: model.image),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(Constants.questionsAmount)")
     }
@@ -88,7 +99,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {[weak self] in
             guard let self else { return }
-
+            
             self.showNextQuestionOrResults()
             self.noButton.isEnabled = true
             self.yesButton.isEnabled = true
@@ -115,22 +126,69 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             
         } else {
             currentQuestionIndex += 1
+            activityIndicator.startAnimating()
             questionFactory?.requestNextQuestion()
+            activityIndicator.stopAnimating()
         }
     }
-        
-        private func show(quiz result: QuizResultsViewModel) {
-            let alertModel = AlertModel (
-                title: result.title,
-                message: result.text,
-                buttonText: result.buttonText)
-                {[weak self] in
-                    guard let self else { return }
-                    self.correctAnswers = 0
-                    self.currentQuestionIndex = 0
-                    self.questionFactory?.requestNextQuestion()
-                }
-            let alertPresenter = AlertPresenter()
-            alertPresenter.showAlert(alertController: self, alertModel: alertModel)
+    
+    private func show(quiz result: QuizResultsViewModel) {
+        let alertModel = AlertModel (
+            title: result.title,
+            message: result.text,
+            buttonText: result.buttonText)
+        {[weak self] in
+            guard let self else { return }
+            self.correctAnswers = 0
+            self.currentQuestionIndex = 0
+            activityIndicator.startAnimating()
+            self.questionFactory?.requestNextQuestion()
+            activityIndicator.stopAnimating()
         }
+        alertPresenter?.showAlert(alertModel: alertModel)
+    }
+
+    
+    private func showNetworkError(message: String) {
+        activityIndicator.stopAnimating()
+        let alertModel = AlertModel (
+            title: Constants.ErrorAlert.title,
+            message: message,
+            buttonText: Constants.ErrorAlert.buttonText)
+        {[weak self] in
+            guard let self else { return }
+            self.correctAnswers = 0
+            self.currentQuestionIndex = 0
+            activityIndicator.startAnimating()
+            self.questionFactory?.loadData()
+            activityIndicator.stopAnimating()
+        }
+        alertPresenter?.showAlert(alertModel: alertModel)
+    }
+    
+    func didLoadDataFromServer() {
+        activityIndicator.startAnimating()
+        questionFactory?.requestNextQuestion()
+        activityIndicator.stopAnimating()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+    
+    func didFailToLoadImage() {
+        activityIndicator.stopAnimating()
+        let alertModel = AlertModel (
+            title: Constants.ErrorAlert.title,
+            message: "Картинка не загружается",
+            buttonText: Constants.ErrorAlert.buttonText)
+        {[weak self] in
+            guard let self else { return }
+            activityIndicator.startAnimating()
+            self.questionFactory?.requestNextQuestion()
+            activityIndicator.stopAnimating()
+        }
+        alertPresenter?.showAlert(alertModel: alertModel)
+    }
+    
 }

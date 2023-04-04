@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina6_1" orientation="portrait" appearance="dark"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -33,6 +33,7 @@
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Вопрос:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AIS-BO-DuT" userLabel="Question Title Label">
                                                 <rect key="frame" x="0.0" y="0.0" width="338" height="23.5"/>
+                                                <color key="backgroundColor" name="ypBlack"/>
                                                 <fontDescription key="fontDescription" name="YSDisplay-Medium" family="YS Display" pointSize="20"/>
                                                 <color key="textColor" name="ypWhite"/>
                                                 <nil key="highlightedColor"/>
@@ -48,7 +49,7 @@
                                     </stackView>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Nuq-Lf-2yY" userLabel="Preview Image">
                                         <rect key="frame" x="0.0" y="43.5" width="374" height="561"/>
-                                        <color key="backgroundColor" name="ypBlack"/>
+                                        <color key="backgroundColor" name="ypWhite"/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="Nuq-Lf-2yY" secondAttribute="height" multiplier="2:3" id="375-1Y-sw5"/>
                                         </constraints>
@@ -59,6 +60,9 @@
                                             </userDefinedRuntimeAttribute>
                                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
                                                 <integer key="value" value="20"/>
+                                            </userDefinedRuntimeAttribute>
+                                            <userDefinedRuntimeAttribute type="color" keyPath="layer.borderColor">
+                                                <color key="value" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </userDefinedRuntimeAttribute>
                                         </userDefinedRuntimeAttributes>
                                     </imageView>
@@ -129,16 +133,22 @@
                                 </subviews>
                                 <color key="backgroundColor" name="ypBlack"/>
                             </stackView>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="6bg-cb-HJM">
+                                <rect key="frame" x="188.5" y="429.5" width="37" height="37"/>
+                            </activityIndicatorView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="rq2-2Y-Je2"/>
                         <color key="backgroundColor" name="ypBlack"/>
                         <constraints>
+                            <constraint firstItem="6bg-cb-HJM" firstAttribute="centerY" secondItem="btR-kg-CbW" secondAttribute="centerY" id="50p-zR-hMf"/>
                             <constraint firstItem="v6b-6H-vjz" firstAttribute="top" secondItem="rq2-2Y-Je2" secondAttribute="top" constant="10" id="659-MR-ynN"/>
                             <constraint firstItem="v6b-6H-vjz" firstAttribute="leading" secondItem="rq2-2Y-Je2" secondAttribute="leading" constant="20" id="B8O-tL-7oP"/>
                             <constraint firstItem="rq2-2Y-Je2" firstAttribute="trailing" secondItem="v6b-6H-vjz" secondAttribute="trailing" constant="20" id="cJL-YD-vz3"/>
+                            <constraint firstItem="6bg-cb-HJM" firstAttribute="centerX" secondItem="btR-kg-CbW" secondAttribute="centerX" id="wTv-LW-no9"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="activityIndicator" destination="6bg-cb-HJM" id="FDA-9V-B0y"/>
                         <outlet property="counterLabel" destination="wUL-55-Pfm" id="VqK-7W-MvR"/>
                         <outlet property="imageView" destination="Nuq-Lf-2yY" id="ogZ-vO-Lb4"/>
                         <outlet property="noButton" destination="2eA-cr-lBX" id="1Df-Zx-OFj"/>
