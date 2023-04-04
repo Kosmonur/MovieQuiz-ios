@@ -36,9 +36,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         alertPresenter = AlertPresenter(alertController: self)
 
-        showLoadingIndicator()
+        activityIndicator.startAnimating()
         questionFactory?.loadData()
-
+        activityIndicator.stopAnimating()
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -126,7 +126,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             
         } else {
             currentQuestionIndex += 1
+            activityIndicator.startAnimating()
             questionFactory?.requestNextQuestion()
+            activityIndicator.stopAnimating()
         }
     }
     
@@ -139,23 +141,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             guard let self else { return }
             self.correctAnswers = 0
             self.currentQuestionIndex = 0
+            activityIndicator.startAnimating()
             self.questionFactory?.requestNextQuestion()
+            activityIndicator.stopAnimating()
         }
         alertPresenter?.showAlert(alertModel: alertModel)
     }
-    
-    private func showLoadingIndicator() {
-        activityIndicator.isHidden = false
-        activityIndicator.startAnimating()
-    }
-    
-    private func hideLoadingIndicator() {
-        activityIndicator.stopAnimating()
-        activityIndicator.isHidden = true
-    }
+
     
     private func showNetworkError(message: String) {
-        hideLoadingIndicator()
+        activityIndicator.stopAnimating()
         let alertModel = AlertModel (
             title: Constants.ErrorAlert.title,
             message: message,
@@ -164,14 +159,17 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             guard let self else { return }
             self.correctAnswers = 0
             self.currentQuestionIndex = 0
+            activityIndicator.startAnimating()
             self.questionFactory?.loadData()
+            activityIndicator.stopAnimating()
         }
         alertPresenter?.showAlert(alertModel: alertModel)
     }
     
     func didLoadDataFromServer() {
-        hideLoadingIndicator()
+        activityIndicator.startAnimating()
         questionFactory?.requestNextQuestion()
+        activityIndicator.stopAnimating()
     }
     
     func didFailToLoadData(with error: Error) {
@@ -179,13 +177,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     func didFailToLoadImage() {
+        activityIndicator.stopAnimating()
         let alertModel = AlertModel (
             title: Constants.ErrorAlert.title,
             message: "Картинка не загружается",
             buttonText: Constants.ErrorAlert.buttonText)
         {[weak self] in
             guard let self else { return }
+            activityIndicator.startAnimating()
             self.questionFactory?.requestNextQuestion()
+            activityIndicator.stopAnimating()
         }
         alertPresenter?.showAlert(alertModel: alertModel)
     }
