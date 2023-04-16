@@ -3,7 +3,6 @@ import UIKit
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
     private enum Constants {
-//        static let questionsAmount = 10
         enum ResultsAlert {
             static let title = "Этот раунд окончен!"
             static let buttonText = "Cыграть ещё раз"
@@ -15,7 +14,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private var correctAnswers: Int = 0
-//   private var currentQuestionIndex: Int = 0
     private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenterProtocol?
     private var currentQuestion: QuizQuestion?
@@ -34,6 +32,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        presenter.viewController = self
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         alertPresenter = AlertPresenter(alertController: self)
 
@@ -61,13 +60,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet private var yesButton: UIButton!
     
     @IBAction private func noButtonClicked(_ sender: UIButton) {
-        guard let currentQuestion else { return }
-        showAnswerResult(isCorrect: !currentQuestion.correctAnswer)
+        presenter.currentQuestion = currentQuestion
+        presenter.noButtonClicked()
     }
     
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        guard let currentQuestion else { return }
-        showAnswerResult(isCorrect: currentQuestion.correctAnswer)
+        presenter.currentQuestion = currentQuestion
+        presenter.yesButtonClicked()
     }
     
     private func show(quiz step: QuizStepViewModel) {
@@ -77,7 +76,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         imageView.layer.borderColor = UIColor.clear.cgColor
     }
     
-    private func showAnswerResult(isCorrect: Bool) {
+    func showAnswerResult(isCorrect: Bool) {
         
         if isCorrect {
             imageView.layer.borderColor = UIColor.ypGreen.cgColor
