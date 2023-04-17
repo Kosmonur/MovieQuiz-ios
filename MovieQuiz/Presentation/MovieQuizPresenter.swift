@@ -2,15 +2,9 @@ import UIKit
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
-    private enum Constants {
-        enum ResultsAlert {
+    private enum ResultsMessage {
             static let title = "Этот раунд окончен!"
             static let buttonText = "Cыграть ещё раз"
-        }
-        enum ErrorAlert {
-            static let title = "Что-то пошло не так("
-            static let buttonText = "Попробовать ещё раз"
-        }
     }
     
     private let questionsAmount = 10
@@ -126,16 +120,14 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
 """
             
             let viewModel = QuizResultsViewModel(
-                title: Constants.ResultsAlert.title,
+                title: ResultsMessage.title,
                 text: text,
-                buttonText: Constants.ResultsAlert.buttonText)
+                buttonText: ResultsMessage.buttonText)
             viewController?.show(quiz: viewModel)
             
         } else {
             self.switchToNextQuestion()
-            viewController?.showLoadingIndicator()
-            questionFactory?.requestNextQuestion()
-            viewController?.hideLoadingIndicator()
+            self.didLoadDataFromServer()
         }
     }
     
