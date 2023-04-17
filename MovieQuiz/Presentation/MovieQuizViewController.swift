@@ -2,23 +2,26 @@ import UIKit
 
 final class MovieQuizViewController: UIViewController {
     
-    private enum ConstantsAlertMessage {
+    private enum ErrorMessage {
             static let title = "Что-то пошло не так("
             static let buttonText = "Попробовать ещё раз"
+            static let messageImageError = "Картинка не загружается"
     }
-    
-    private var questionFactory: QuestionFactoryProtocol?
-    var alertPresenter: AlertPresenterProtocol?
-    private var presenter: MovieQuizPresenter!
-    
+
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var counterLabel: UILabel!
     @IBOutlet var activityIndicator: UIActivityIndicatorView!
+    @IBOutlet private var noButton: UIButton!
+    @IBOutlet private var yesButton: UIButton!
+    
+    private var presenter: MovieQuizPresenter!
+    var alertPresenter: AlertPresenterProtocol?
     
     override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
 
     // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -26,16 +29,7 @@ final class MovieQuizViewController: UIViewController {
         alertPresenter = AlertPresenter(alertController: self)
     }
     
-    func didReceiveNextQuestion(question: QuizQuestion?) {
-        presenter.didReceiveNextQuestion(question: question)
-    }
-    
-    private func notify(_ feedbackType: UINotificationFeedbackGenerator.FeedbackType) {
-        UINotificationFeedbackGenerator().notificationOccurred(feedbackType)
-    }
-    
-    @IBOutlet private var noButton: UIButton!
-    @IBOutlet private var yesButton: UIButton!
+    // MARK: - Actions
     
     @IBAction private func noButtonClicked(_ sender: UIButton) {
         presenter.noButtonClicked()
@@ -45,34 +39,13 @@ final class MovieQuizViewController: UIViewController {
         presenter.yesButtonClicked()
     }
     
+    // MARK: - Private functions
+    
     func show(quiz step: QuizStepViewModel) {
         imageView.image = step.image
         textLabel.text =  step.question
         counterLabel.text = step.questionNumber
         imageView.layer.borderColor = UIColor.clear.cgColor
-    }
-    
-    func showAnswerResult(isCorrect: Bool) {
-        
-        if isCorrect {
-            imageView.layer.borderColor = UIColor.ypGreen.cgColor
-            notify(.success)
-            presenter.didAnswerCorrect()
-        } else {
-            imageView.layer.borderColor = UIColor.ypRed.cgColor
-            notify(.error)
-        }
-        
-        noButton.isEnabled = false
-        yesButton.isEnabled = false
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {[weak self] in
-            guard let self else { return }
-            
-            self.presenter.showNextQuestionOrResults()
-            self.noButton.isEnabled = true
-            self.yesButton.isEnabled = true
-        }
     }
     
     func show(quiz result: QuizResultsViewModel) {
@@ -87,17 +60,14 @@ final class MovieQuizViewController: UIViewController {
         alertPresenter?.showAlert(alertModel: alertModel)
     }
     
-    func showNetworkError(message: String) {
-        hideLoadingIndicator()
-        let alertModel = AlertModel (
-            title: ConstantsAlertMessage.title,
-            message: message,
-            buttonText: ConstantsAlertMessage.buttonText)
-        {[weak self] in
-            guard let self else { return }
-            self.presenter.restartGame()
+    func highlightImageBorder(isCorrectAnswer: Bool) {
+        if isCorrectAnswer {
+            imageView.layer.borderColor = UIColor.ypGreen.cgColor
+            notify(.success)
+        } else {
+            imageView.layer.borderColor = UIColor.ypRed.cgColor
+            notify(.error)
         }
-        alertPresenter?.showAlert(alertModel: alertModel)
     }
     
     func hideLoadingIndicator() {
@@ -107,4 +77,46 @@ final class MovieQuizViewController: UIViewController {
     func showLoadingIndicator() {
         activityIndicator.startAnimating()
     }
+
+    func notify(_ feedbackType: UINotificationFeedbackGenerator.FeedbackType) {
+        UINotificationFeedbackGenerator().notificationOccurred(feedbackType)
+    }
+    
+    func lockButtons() {
+        noButton.isEnabled = false
+        yesButton.isEnabled = false
+    }
+    
+    func unlockButtons() {
+        noButton.isEnabled = true
+        yesButton.isEnabled = true
+    }
+    
+    func showNetworkError(message: String) {
+        hideLoadingIndicator()
+        let alertModel = AlertModel (
+            title: ErrorMessage.title,
+            message: message,
+            buttonText: ErrorMessage.buttonText)
+        {[weak self] in
+            guard let self else { return }
+            self.presenter.restartGame()
+        }
+        alertPresenter?.showAlert(alertModel: alertModel)
+    }
+    
+    func showLoadImageError() {
+        hideLoadingIndicator()
+        let alertModel = AlertModel (
+            title: ErrorMessage.title,
+            message: ErrorMessage.messageImageError,
+            buttonText: ErrorMessage.buttonText)
+        {[weak self] in
+            guard let self else { return }
+            self.presenter.didLoadDataFromServer()
+        }
+        alertPresenter?.showAlert(alertModel: alertModel)
+    }
+    
+
 }
