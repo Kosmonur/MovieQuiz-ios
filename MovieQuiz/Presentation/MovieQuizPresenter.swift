@@ -25,7 +25,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         viewController.showLoadingIndicator()
         questionFactory?.loadData()
-        viewController.hideLoadingIndicator()
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -61,9 +60,14 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     func restartGame() {
         currentQuestionIndex = 0
         correctAnswers = 0
+        didLoadDataFromServer()
+    }
+    
+    func reloadData() {
+        currentQuestionIndex = 0
+        correctAnswers = 0
         viewController?.showLoadingIndicator()
-        questionFactory?.requestNextQuestion()
-        viewController?.hideLoadingIndicator()
+        questionFactory?.loadData()
     }
     
     func switchToNextQuestion() {

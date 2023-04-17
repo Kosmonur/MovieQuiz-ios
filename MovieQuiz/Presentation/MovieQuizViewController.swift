@@ -100,7 +100,7 @@ final class MovieQuizViewController: UIViewController {
             buttonText: ErrorMessage.buttonText)
         {[weak self] in
             guard let self else { return }
-            self.presenter.restartGame()
+            self.presenter.reloadData()
         }
         alertPresenter?.showAlert(alertModel: alertModel)
     }
