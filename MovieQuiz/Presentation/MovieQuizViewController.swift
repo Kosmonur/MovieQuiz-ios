@@ -2,12 +2,16 @@ import UIKit
 
 final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol {
     
+    // MARK: - Constants
+    
     private enum ErrorMessage {
             static let title = "Что-то пошло не так("
             static let buttonText = "Попробовать ещё раз"
             static let messageImageError = "Картинка не загружается"
     }
 
+    // MARK: - IBOutlets
+    
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var counterLabel: UILabel!
@@ -39,7 +43,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         presenter.yesButtonClicked()
     }
     
-    // MARK: - Private functions
+    // MARK: - Functions
     
     func show(quiz step: QuizStepViewModel) {
         imageView.image = step.image

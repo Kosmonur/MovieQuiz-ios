@@ -2,12 +2,16 @@ import UIKit
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
+    // MARK: - Constants
+    
     private enum ResultsMessage {
             static let title = "Этот раунд окончен!"
             static let buttonText = "Cыграть ещё раз"
     }
     
     private let questionsAmount = 10
+    
+    // MARK: - Private Properties
     
     private var statisticService: StatisticService!
     private var questionFactory: QuestionFactoryProtocol?
@@ -53,10 +57,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
     }
     
-    func isLastQuestion() -> Bool {
-        currentQuestionIndex == questionsAmount - 1
-    }
-    
     func restartGame() {
         currentQuestionIndex = 0
         correctAnswers = 0
@@ -68,10 +68,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         correctAnswers = 0
         viewController?.showLoadingIndicator()
         questionFactory?.loadData()
-    }
-    
-    func switchToNextQuestion() {
-        currentQuestionIndex += 1
     }
     
     func convert(model: QuizQuestion) -> QuizStepViewModel {
@@ -89,12 +85,20 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         didAnswer(isYes: false)
     }
     
+    private func isLastQuestion() -> Bool {
+        currentQuestionIndex == questionsAmount - 1
+    }
+    
+    private func switchToNextQuestion() {
+        currentQuestionIndex += 1
+    }
+    
     private func didAnswer(isYes: Bool) {
         guard let currentQuestion else { return }
         proceedWithAnswer(isCorrect: currentQuestion.correctAnswer == isYes)
         }
     
-    func proceedWithAnswer(isCorrect: Bool) {
+    private func proceedWithAnswer(isCorrect: Bool) {
         
         if isCorrect {
             correctAnswers += 1
@@ -111,7 +115,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
     }
     
-    func proceedToNextQuestionOrResults() {
+    private func proceedToNextQuestionOrResults() {
         if self.isLastQuestion() {
             
             statisticService.store(correct: correctAnswers, total: self.questionsAmount)
