@@ -4,7 +4,10 @@ MovieQuiz - это приложение-квиз о фильмах из топ-2
 
 ## **Скрины приложения**
 
+<img width="200" src="https://github.com/Kosmonur/MovieQuiz-ios/blob/sprint_07/ScreenShots/1.png"> <img width="200" src="https://github.com/Kosmonur/MovieQuiz-ios/blob/sprint_07/ScreenShots/2.png">
 
+## **Видеодемонстрация работы приложения**
+- [Видео](https://disk.yandex.ru/i/XYwt_cimJc9j4g)
 
 ## **Ссылки**
 
